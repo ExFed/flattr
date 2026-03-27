@@ -3,7 +3,7 @@ module Path where
 import Data.Function ((&))
 import Data.Text (Text, pack, replace)
 import qualified Data.Text as T
-import Types (Path, Segment (ArrayIndex, ObjectKey))
+import Types (Path, Segment (..))
 
 escape :: Text -> Text
 escape t = t & replace "~" "~~" & replace "$" "~$" & replace "/" "~/"
