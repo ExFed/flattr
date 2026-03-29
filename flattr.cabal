@@ -42,13 +42,11 @@ extra-doc-files: CHANGELOG.md
 common warnings
   ghc-options: -Wall
 
-executable flattr
+library
   -- Import common warning flags.
   import: warnings
-  -- .hs or .lhs file containing the Main module.
-  main-is: Main.hs
   -- Modules included in this executable, other than Main.
-  other-modules:
+  exposed-modules:
     Flattr
     Path
     Types
@@ -73,3 +71,34 @@ executable flattr
     DeriveGeneric
     LambdaCase
     OverloadedStrings
+
+executable flattr
+  import: warnings
+  main-is: Main.hs
+  hs-source-dirs: app
+  build-depends:
+    base ^>=4.18.0.0,
+    flattr,
+
+  default-language: Haskell2010
+
+test-suite tests
+  type: exitcode-stdio-1.0
+  main-is: Main.hs
+  other-modules:
+    FlattrTests
+
+  hs-source-dirs:
+    tests
+
+  build-depends:
+    HUnit,
+    aeson,
+    base ^>=4.18.0.0,
+    call-stack >=0.3.0,
+    flattr,
+
+  default-extensions:
+    OverloadedStrings
+
+  default-language: Haskell2010
