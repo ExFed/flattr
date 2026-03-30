@@ -18,9 +18,9 @@ mergeObjectsTest = TestCase $ do
   let actual = merge obj1 obj2
   -- `merge` returns an Either, so we compare Right expect with actual
   Right (fromJust expect) @=? actual
-  where
-    fromJust (Just x) = x
-    fromJust Nothing = error "Test setup failed"
+ where
+  fromJust (Just x) = x
+  fromJust Nothing = error "Test setup failed"
 
 mergeArraysTest = TestCase $ do
   let Just arr1 = decode "[1, null]" :: Maybe Value
@@ -28,9 +28,9 @@ mergeArraysTest = TestCase $ do
   let expect = decode "[1, 2]" :: Maybe Value
   let actual = merge arr1 arr2
   Right (fromJust expect) @=? actual
-  where
-    fromJust (Just x) = x
-    fromJust Nothing = error "Test setup failed"
+ where
+  fromJust (Just x) = x
+  fromJust Nothing = error "Test setup failed"
 
 mergeConflictTest = TestCase $ do
   let Just val1 = decode "{\"a\": 1}" :: Maybe Value
@@ -39,21 +39,22 @@ mergeConflictTest = TestCase $ do
   assertBool "Expected merge conflict (Left)" (isLeft actual)
 
 unflattenTest = TestCase $ do
-  let input = 
+  let input =
         [ ([ObjectKey "a", ObjectKey "b"], Number 1)
         , ([ObjectKey "a", ObjectKey "c"], Number 2)
         ]
   let expect = decode "{\"a\": {\"b\": 1, \"c\": 2}}" :: Maybe Value
   let actual = unflattenAttrs input
   Right (fromJust expect) @=? actual
-  where
-    fromJust (Just x) = x
-    fromJust Nothing = error "Test setup failed"
+ where
+  fromJust (Just x) = x
+  fromJust Nothing = error "Test setup failed"
 
-tests = TestList 
-  [ "singleton" ~: singletonTest
-  , "merge objects" ~: mergeObjectsTest
-  , "merge arrays" ~: mergeArraysTest
-  , "merge conflict" ~: mergeConflictTest
-  , "unflatten" ~: unflattenTest
-  ]
+tests =
+  TestList
+    [ "singleton" ~: singletonTest
+    , "merge objects" ~: mergeObjectsTest
+    , "merge arrays" ~: mergeArraysTest
+    , "merge conflict" ~: mergeConflictTest
+    , "unflatten" ~: unflattenTest
+    ]
