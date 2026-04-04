@@ -18,11 +18,13 @@ library
     Flattr
     Path
     Types
+    ValueBuilder
 
   build-depends:
     , aeson
     , base                  ^>=4.18.0.0
     , bytestring
+    , containers
     , text
     , unordered-containers
     , vector
@@ -48,12 +50,16 @@ executable flattr
 test-suite tests
   type:               exitcode-stdio-1.0
   main-is:            Main.hs
-  other-modules:      FlattrTests
+  other-modules:
+    FlattrTests
+    ValueBuilderTests
+
   hs-source-dirs:     tests
   build-depends:
     , aeson
     , base        ^>=4.18.0.0
     , call-stack  >=0.3.0
+    , containers
     , flattr
     , HUnit
 

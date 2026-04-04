@@ -1,22 +1,20 @@
 module Main (main) where
 
-import qualified FlattrTests
 import System.Exit (exitFailure, exitSuccess)
 import Test.HUnit
 
+import qualified FlattrTests
+import qualified ValueBuilderTests
+
 main :: IO ()
 main = do
-  -- Run all tests
   counts <- runTestTT tests
-
-  -- Print summary
-  print counts
-
   if errors counts == 0 && failures counts == 0
     then exitSuccess
     else exitFailure
 
 tests =
   TestList
-    [ "Path" ~: FlattrTests.tests
+    [ "Flattr" ~: FlattrTests.tests
+    , "ValueBuilder" ~: ValueBuilderTests.tests
     ]

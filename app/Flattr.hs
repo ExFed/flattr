@@ -27,3 +27,6 @@ flattenValue val = case val of
     let enums = zip [0 ..] $ V.toList a
         pathCons i (p, v) = (ArrayIndex i : p, v)
      in enums >>= \(i, v) -> map (pathCons i) $ flattenValue v
+
+unflattenAttrs :: [(Path, Value)] -> Either String Value
+unflattenAttrs _attrs = error "TODO"

@@ -1,4 +1,4 @@
-module Path (escape, unescape, encode, decode) where
+module Path (escape, unescape, encode, decode, toString) where
 
 import Data.Function ((&))
 import Data.Text (Text, pack, replace)
@@ -54,3 +54,6 @@ decode = parsePath
       Nothing -> Left "Invalid escape: ~"
     -- continue scanning
     Just (c, rest) -> nextToken (c : acc) rest
+
+toString :: Path -> String
+toString p = T.unpack $ encode p
