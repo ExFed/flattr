@@ -4,7 +4,7 @@ module Types where
 
 import Data.Aeson (Value (..))
 import qualified Data.Aeson.KeyMap as KM
-import qualified Data.IntMap.Strict as IM
+import qualified Data.IntMap as IM
 import Data.Text (Text, unpack)
 
 data Segment

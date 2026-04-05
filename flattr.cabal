@@ -22,15 +22,12 @@ library
 
   build-depends:
     , aeson
-    , base                  ^>=4.18.0.0
-    , bytestring
+    , base        ^>=4.18.0.0
     , containers
     , text
-    , unordered-containers
     , vector
-    , yaml
 
-  hs-source-dirs:     app
+  hs-source-dirs:     lib
   default-language:   Haskell2010
   default-extensions:
     DeriveGeneric
@@ -38,14 +35,32 @@ library
     OverloadedStrings
 
 executable flattr
-  import:           warnings
-  main-is:          Main.hs
-  hs-source-dirs:   app
+  import:             warnings
+  main-is:            Main.hs
+  hs-source-dirs:     app
   build-depends:
-    , base    ^>=4.18.0.0
+    , aeson
+    , base        ^>=4.18.0.0
+    , bytestring
     , flattr
+    , yaml
 
-  default-language: Haskell2010
+  default-extensions: OverloadedStrings
+  default-language:   Haskell2010
+
+executable unflattr
+  import:             warnings
+  main-is:            Main.hs
+  hs-source-dirs:     app
+  build-depends:
+    , aeson
+    , base        ^>=4.18.0.0
+    , bytestring
+    , flattr
+    , yaml
+
+  default-extensions: OverloadedStrings
+  default-language:   Haskell2010
 
 test-suite tests
   type:               exitcode-stdio-1.0
@@ -58,7 +73,7 @@ test-suite tests
   build-depends:
     , aeson
     , base        ^>=4.18.0.0
-    , call-stack  >=0.3.0
+    , call-stack
     , containers
     , flattr
     , HUnit

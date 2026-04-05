@@ -3,7 +3,7 @@ module ValueBuilderTests where
 import Data.Aeson
 import qualified Data.Aeson.KeyMap as KM
 import Data.Either (isLeft)
-import qualified Data.IntMap.Strict as IM
+import qualified Data.IntMap as IM
 import Data.Maybe (fromJust)
 import Flattr
 import qualified Path

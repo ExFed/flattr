@@ -12,7 +12,7 @@ import Data.Aeson (Value (Array, Null, Object))
 import qualified Data.Aeson.Key as K
 import qualified Data.Aeson.KeyMap as KM
 import Data.Bifunctor (second)
-import qualified Data.IntMap.Strict as IM
+import qualified Data.IntMap as IM
 import Data.Maybe (fromMaybe)
 import qualified Data.Vector as V
 import Path (toString)

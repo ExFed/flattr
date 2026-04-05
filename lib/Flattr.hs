@@ -1,4 +1,4 @@
-module Flattr (flattenValue, unflattenAttrs) where
+module Flattr (flattenValue, flattr, unflattenAttrs, unflattr) where
 
 import Control.Monad (foldM)
 import Data.Aeson (Value (..))
@@ -6,6 +6,7 @@ import qualified Data.Aeson.Key as K
 import qualified Data.Aeson.KeyMap as KM
 import Data.Bifunctor (first)
 import qualified Data.Vector as V
+import qualified Path as P
 import Types (Path, Segment (..))
 import qualified ValueBuilder as VB
 
@@ -34,3 +35,20 @@ unflattenAttrs :: [(Path, Value)] -> Either String Value
 unflattenAttrs attrs = do
   vb <- foldM (\acc (p, v) -> Just <$> VB.insertAt p v acc) Nothing attrs
   return $ maybe Null VB.toValue vb
+
+flattr :: Value -> Value
+flattr val =
+  let attrs = flattenValue val
+      objEntries = map (first $ K.fromText . P.encode) attrs
+   in Object $ KM.fromList objEntries
+
+unflattr :: Value -> Either String Value
+unflattr val = case val of
+  Object attrMap -> do
+    let objEntries = KM.toList attrMap
+    let visit (k, v) = case P.decode $ K.toText k of
+          Right p -> Right (p, v)
+          Left e -> Left e
+    attrs <- traverse visit objEntries
+    unflattenAttrs attrs
+  _ -> Left "not an attribute object"
