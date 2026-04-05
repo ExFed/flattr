@@ -5,27 +5,24 @@ of attribute paths and values. Conversely, _unflattr_ performs the opposite
 conversion from attribute paths and values into structured data. Both _flattr_
 and _unflattr_ support multiple serialization formats.
 
-## Roadmap
+## Features
 
-### MVP: The Heavy Hitters
+The tool supports reading and writing JSON and YAML. This means reading/writing
+both structured data and flattened attributes.
 
-The MVP should support reading and writing JSON and YAML. This means
-reading/writing both structured data and flattened attributes.
-
-Do not convert between formats; structured data in JSON converts to/from flat
+Does not convert between formats; structured data in JSON converts to/from flat
 attributes in JSON, structured data in YAML converts to/from flat attributes in
 YAML.
 
-Attribute paths must be encodable within the format; consider escape sequences.
+Attribute paths are encoded within the format and consider escape sequences.
 
-Conversion should be _lossless_. In other words, converting structures into
-attributes and back again will produce the original document. This will require
-stable insertion order.
+Conversion is _lossless_. In other words, converting structures into attributes
+and back again will produce the original document.
 
-#### CLI
+### CLI
 
-Both `flattr` and `unflattr` are CLI tools. For the MVP, start simple: read from
-_stdin_, write to _stdout_, require a single `--format` flag.
+Both `flattr` and `unflattr` are CLI tools. They read from
+_stdin_, write to _stdout_, and require a single `--format` flag.
 
 **Examples:**
 
@@ -37,9 +34,9 @@ flattr --format json < data.json > flat.json
 unflattr --format yaml < flat.yaml > data.yaml
 ```
 
-#### JSON Support
+### JSON Support
 
-The MVP must be able to flattr and unflattr JSON.
+`flattr` and `unflattr` fully support JSON.
 
 **Path construction:** (very) loosely based on
 [RFC6901](https://www.rfc-editor.org/rfc/rfc6901) JSON Pointers, using a dollar
@@ -127,9 +124,9 @@ Flat attributes:
 "just a scalar"
 ```
 
-#### YAML Support
+### YAML Support
 
-The MVP must be able to _flattr_ and _unflattr_ YAML.
+`flattr` and `unflattr` fully support YAML.
 
 **Path construction:** (very) loosely based on
 [YAMLPath](https://github.com/wwkimball/yamlpath/wiki/Segments-of-a-YAML-Path),
