@@ -4,7 +4,7 @@ module Types where
 
 import Data.Aeson (Value (..))
 import qualified Data.Aeson.KeyMap as KM
-import qualified Data.Map as M
+import qualified Data.IntMap.Strict as IM
 import Data.Text (Text, unpack)
 
 data Segment
@@ -23,6 +23,6 @@ type Result a = Either String a
 
 data ValueBuilder
   = Obj (KM.KeyMap ValueBuilder)
-  | Arr (M.Map Int ValueBuilder)
+  | Arr (IM.IntMap ValueBuilder)
   | Val Value
   deriving (Show, Eq)

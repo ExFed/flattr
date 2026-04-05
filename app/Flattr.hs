@@ -1,11 +1,13 @@
-module Flattr where
+module Flattr (flattenValue, unflattenAttrs) where
 
+import Control.Monad (foldM)
 import Data.Aeson (Value (..))
 import qualified Data.Aeson.Key as K
 import qualified Data.Aeson.KeyMap as KM
 import Data.Bifunctor (first)
 import qualified Data.Vector as V
 import Types (Path, Segment (..))
+import qualified ValueBuilder as VB
 
 -- | Recursively flatten a JSON value into a list of (Path, Value) pairs.
 flattenValue :: Value -> [(Path, Value)]
@@ -29,4 +31,6 @@ flattenValue val = case val of
      in enums >>= \(i, v) -> map (pathCons i) $ flattenValue v
 
 unflattenAttrs :: [(Path, Value)] -> Either String Value
-unflattenAttrs _attrs = error "TODO"
+unflattenAttrs attrs = do
+  vb <- foldM (\acc (p, v) -> Just <$> VB.insertAt p v acc) Nothing attrs
+  return $ maybe Null VB.toValue vb

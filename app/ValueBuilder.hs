@@ -1,13 +1,10 @@
 module ValueBuilder (
-  (>>|<<),
   emptyArr,
   emptyObj,
   ensureSize,
   fromValue,
   insertAt,
   insertFilled,
-  merge,
-  singleton,
   toValue,
 ) where
 
@@ -15,7 +12,7 @@ import Data.Aeson (Value (Array, Null, Object))
 import qualified Data.Aeson.Key as K
 import qualified Data.Aeson.KeyMap as KM
 import Data.Bifunctor (second)
-import qualified Data.Map as M
+import qualified Data.IntMap.Strict as IM
 import Data.Maybe (fromMaybe)
 import qualified Data.Vector as V
 import Path (toString)
@@ -26,9 +23,9 @@ fromValue v = case v of
   Object o -> Obj $ foldl f KM.empty (KM.toList o)
    where
     f acc (k', v') = KM.insert k' (fromValue v') acc
-  Array a -> Arr $ V.ifoldl f M.empty a
+  Array a -> Arr $ V.ifoldl f IM.empty a
    where
-    f acc i' v' = M.insert i' (fromValue v') acc
+    f acc i' v' = IM.insert i' (fromValue v') acc
   _ -> Val v
 
 toValue :: ValueBuilder -> Value
@@ -36,7 +33,7 @@ toValue v = case v of
   Obj o -> Object $ foldl f KM.empty (KM.toList o)
    where
     f acc (k', v') = KM.insert k' (toValue v') acc
-  Arr a -> Array $ fromMaybe Null <$> M.foldrWithKey f V.empty a
+  Arr a -> Array $ fromMaybe Null <$> IM.foldrWithKey f V.empty a
    where
     f :: Int -> ValueBuilder -> V.Vector (Maybe Value) -> V.Vector (Maybe Value)
     f k v' = insertFilled [(k, toValue v')]
@@ -46,43 +43,15 @@ emptyObj :: ValueBuilder
 emptyObj = Obj KM.empty
 
 emptyArr :: ValueBuilder
-emptyArr = Arr M.empty
-
-singleton :: Path -> ValueBuilder -> ValueBuilder
-singleton [] v = v
-singleton (p : ss) v = case p of
-  (ObjectKey k) -> Obj $ KM.singleton (K.fromText k) (singleton ss v)
-  (ArrayIndex i) -> Arr $ M.singleton i (singleton ss v)
-
-merge :: ValueBuilder -> ValueBuilder -> Result ValueBuilder
-merge (Obj a) (Obj b) =
-  let a' = KM.map Right a
-      b' = KM.map Right b
-      ab = KM.unionWith mergeResults a' b'
-   in Obj <$> sequenceA ab
-merge (Arr a) (Arr b) =
-  let a' = M.map Right a
-      b' = M.map Right b
-      ab = M.unionWith mergeResults a' b'
-   in Arr <$> sequenceA ab
-merge (Val a) (Val b) = Left ("Cannot merge values: (" ++ show a ++ ") >>|<< (" ++ show b ++ ")")
-merge a b = Left ("Cannot merge mismatched types: (" ++ show a ++ ") >>|<< (" ++ show b ++ ")")
-
-(>>|<<) :: Result ValueBuilder -> Result ValueBuilder -> Result ValueBuilder
-(>>|<<) = mergeResults
-infixl 1 >>|<<
-
-mergeResults :: Result ValueBuilder -> Result ValueBuilder -> Result ValueBuilder
-mergeResults ra rb = do
-  va <- ra
-  vb <- rb
-  merge va vb
+emptyArr = Arr IM.empty
 
 insertAt :: Path -> Value -> Maybe ValueBuilder -> Result ValueBuilder
 insertAt = insertAt' []
  where
   insertAt' crumbs path val vb' = case path of
-    [] -> Right $ Val val
+    [] -> case vb' of
+      Nothing -> Right $ Val val
+      _ -> Left $ toString (reverse crumbs) ++ ": path conflict (would overwrite value)"
     (ObjectKey k) : p -> case vb' of
       Nothing -> insertAt' crumbs path val (Just (Obj KM.empty))
       Just (Obj o) -> do
@@ -91,10 +60,10 @@ insertAt = insertAt' []
         Right $ Obj $ KM.insert key inner o
       _ -> Left $ toString (reverse crumbs) ++ ": cannot traverse into non-object"
     (ArrayIndex i) : p -> case vb' of
-      Nothing -> insertAt' crumbs path val (Just (Arr M.empty))
+      Nothing -> insertAt' crumbs path val (Just (Arr IM.empty))
       Just (Arr a) -> do
-        inner <- insertAt' (ArrayIndex i : crumbs) p val (M.lookup i a)
-        Right $ Arr $ M.insert i inner a
+        inner <- insertAt' (ArrayIndex i : crumbs) p val (IM.lookup i a)
+        Right $ Arr $ IM.insert i inner a
       _ -> Left $ toString (reverse crumbs) ++ ": cannot traverse into non-array"
 
 ensureSize :: a -> Int -> V.Vector a -> V.Vector a

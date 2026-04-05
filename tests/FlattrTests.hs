@@ -31,8 +31,26 @@ unflattenTest = TestCase $ do
   fromJust (Just x) = x
   fromJust Nothing = error "Test setup failed"
 
+objClobberAttrTest = TestCase $ do
+  let input =
+        [ ([ObjectKey "a"], Number 1)
+        , ([ObjectKey "a", ObjectKey "b"], Number 2)
+        ]
+  let actual = unflattenAttrs input
+  assertBool "Expected error" (isLeft actual)
+
+attrClobberObjTest = TestCase $ do
+  let input =
+        [ ([ObjectKey "a", ObjectKey "b"], Number 2)
+        , ([ObjectKey "a"], Number 1)
+        ]
+  let actual = unflattenAttrs input
+  assertBool "Expected error" (isLeft actual)
+
 tests =
   TestList
     [ "flatten" ~: flattenTest
     , "unflatten" ~: unflattenTest
+    , "object clobber attr" ~: objClobberAttrTest
+    , "attr clobber object" ~: attrClobberObjTest
     ]
