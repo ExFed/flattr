@@ -37,13 +37,26 @@ unflattenAttrs attrs = do
   return $ maybe Null VB.toValue vb
 
 flattr :: Value -> Value
-flattr val =
-  let attrs = flattenValue val
-      objEntries = map (first $ K.fromText . P.encode) attrs
-   in Object $ KM.fromList objEntries
+flattr val = case val of
+  -- ignore scalar documents
+  String _ -> val
+  Number _ -> val
+  Bool _ -> val
+  Null -> val
+  -- flatten structures
+  _ ->
+    let attrs = flattenValue val
+        objEntries = map (first $ K.fromText . P.encode) attrs
+     in Object $ KM.fromList objEntries
 
 unflattr :: Value -> Either String Value
 unflattr val = case val of
+  -- ignore scalar documents
+  String _ -> Right val
+  Number _ -> Right val
+  Bool _ -> Right val
+  Null -> Right val
+  -- unflatten structures
   Object attrMap -> do
     let objEntries = KM.toList attrMap
     let visit (k, v) = case P.decode $ K.toText k of
@@ -51,4 +64,4 @@ unflattr val = case val of
           Left e -> Left e
     attrs <- traverse visit objEntries
     unflattenAttrs attrs
-  _ -> Left "not an attribute object"
+  Array _ -> Left "cannot unflatten (array at root)"
