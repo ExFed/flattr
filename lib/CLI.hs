@@ -1,18 +1,18 @@
-module Main (main) where
+module CLI (cli) where
 
 import Control.Exception (Exception (displayException))
 import Data.Aeson (Value, eitherDecodeStrict, encode)
 import qualified Data.ByteString as B
 import qualified Data.ByteString.Lazy as BL
 import qualified Data.Yaml as Y
-import Flattr (flattenValue, flattr, unflattr)
+import Flattr (flattr, unflattr)
 import System.Environment (getArgs, getProgName)
 import System.Exit (die)
 
 data Format = JSON | YAML deriving (Show, Eq)
 
-main :: IO ()
-main = do
+cli :: IO ()
+cli = do
   progName <- getProgName
   args <- getArgs
 

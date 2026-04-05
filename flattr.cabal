@@ -15,6 +15,7 @@ common warnings
 library
   import:             warnings
   exposed-modules:
+    CLI
     Flattr
     Path
     Types
@@ -23,9 +24,11 @@ library
   build-depends:
     , aeson
     , base        ^>=4.18.0.0
+    , bytestring
     , containers
     , text
     , vector
+    , yaml
 
   hs-source-dirs:     lib
   default-language:   Haskell2010
@@ -37,13 +40,10 @@ library
 executable flattr
   import:             warnings
   main-is:            Main.hs
-  hs-source-dirs:     app
+  hs-source-dirs:     app/flattr
   build-depends:
-    , aeson
-    , base        ^>=4.18.0.0
-    , bytestring
+    , base    ^>=4.18.0.0
     , flattr
-    , yaml
 
   default-extensions: OverloadedStrings
   default-language:   Haskell2010
@@ -51,13 +51,10 @@ executable flattr
 executable unflattr
   import:             warnings
   main-is:            Main.hs
-  hs-source-dirs:     app
+  hs-source-dirs:     app/unflattr
   build-depends:
-    , aeson
-    , base        ^>=4.18.0.0
-    , bytestring
+    , base    ^>=4.18.0.0
     , flattr
-    , yaml
 
   default-extensions: OverloadedStrings
   default-language:   Haskell2010
