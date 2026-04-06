@@ -1,3 +1,5 @@
+{-# LANGUAGE TupleSections #-}
+
 module ValueBuilder (
   emptyArr,
   emptyObj,
@@ -8,12 +10,11 @@ module ValueBuilder (
   toValue,
 ) where
 
-import Data.Aeson (Value (Array, Null, Object))
+import Data.Aeson (Value (Array, Object))
 import qualified Data.Aeson.Key as K
 import qualified Data.Aeson.KeyMap as KM
 import Data.Bifunctor (second)
 import qualified Data.IntMap as IM
-import Data.Maybe (fromMaybe)
 import qualified Data.Vector as V
 import Path (toString)
 import Types
@@ -28,16 +29,26 @@ fromValue v = case v of
     f acc i' v' = IM.insert i' (fromValue v') acc
   _ -> Val v
 
-toValue :: ValueBuilder -> Value
-toValue v = case v of
-  Obj o -> Object $ foldl f KM.empty (KM.toList o)
+toValue :: ValueBuilder -> Result Value
+toValue valBld = case valBld of
+  Obj o -> Object . KM.fromList <$> traverse visit (KM.toList o)
    where
-    f acc (k', v') = KM.insert k' (toValue v') acc
-  Arr a -> Array $ fromMaybe Null <$> IM.foldrWithKey f V.empty a
-   where
-    f :: Int -> ValueBuilder -> V.Vector (Maybe Value) -> V.Vector (Maybe Value)
-    f k v' = insertFilled [(k, toValue v')]
-  Val v' -> v'
+    visit (k, vb) = (k,) <$> toValue vb
+  Arr a -> case scanGaps $ IM.toAscList a of
+    Right elems -> Array . V.fromList <$> traverse toValue elems
+    Left gaps -> Left $ "found gaps: " ++ show gaps
+  Val v -> Right v
+
+scanGaps :: [(Int, a)] -> Either [Int] [a]
+scanGaps l = scanGaps' l (-1) [] []
+ where
+  scanGaps' :: [(Int, a)] -> Int -> [Int] -> [a] -> Either [Int] [a]
+  scanGaps' [] _ gaps vals
+    | null gaps = Right $ reverse vals
+    | otherwise = Left $ reverse gaps
+  scanGaps' ((i, v) : ivs) lastIdx gaps vals = case [(lastIdx + 1) .. (i - 1)] of
+    [] -> scanGaps' ivs i gaps $ v : vals
+    gap -> scanGaps' ivs i (reverse gap ++ gaps) $ v : vals
 
 emptyObj :: ValueBuilder
 emptyObj = Obj KM.empty
@@ -48,6 +59,8 @@ emptyArr = Arr IM.empty
 insertAt :: Path -> Value -> Maybe ValueBuilder -> Result ValueBuilder
 insertAt = insertAt' []
  where
+  insertAt' ::
+    [Segment] -> [Segment] -> Value -> Maybe ValueBuilder -> Either [Char] ValueBuilder
   insertAt' crumbs path val vb' = case path of
     [] -> case vb' of
       Nothing -> Right $ Val val

@@ -5,6 +5,7 @@ import Data.Aeson (Value (..))
 import qualified Data.Aeson.Key as K
 import qualified Data.Aeson.KeyMap as KM
 import Data.Bifunctor (first)
+import Data.Maybe (fromMaybe)
 import qualified Data.Vector as V
 import qualified Path as P
 import Types (Path, Segment (..))
@@ -33,8 +34,10 @@ flattenValue val = case val of
 
 unflattenAttrs :: [(Path, Value)] -> Either String Value
 unflattenAttrs attrs = do
-  vb <- foldM (\acc (p, v) -> Just <$> VB.insertAt p v acc) Nothing attrs
-  return $ maybe Null VB.toValue vb
+  let f acc (p, v) = Just <$> VB.insertAt p v acc
+  vb' <- foldM f Nothing attrs
+  v' <- traverse VB.toValue vb'
+  return $ fromMaybe Null v'
 
 flattr :: Value -> Value
 flattr val = case val of

@@ -1,6 +1,6 @@
 module ValueBuilderTests where
 
-import Data.Aeson
+import Data.Aeson (Value (Bool, Null, Number, String), decode)
 import qualified Data.Aeson.KeyMap as KM
 import Data.Either (isLeft)
 import qualified Data.IntMap as IM
@@ -8,7 +8,7 @@ import Data.Maybe (fromJust)
 import Flattr
 import qualified Path
 import Test.HUnit
-import Types (Segment (..), ValueBuilder (..))
+import Types (Result, Segment (..), ValueBuilder (..))
 import ValueBuilder
 
 fromValueTest = TestCase $ do
@@ -35,35 +35,35 @@ toValueTest = TestCase $ do
                 )
     let Just expect = decode "{\"c\": [22, 11], \"b\": false, \"a\": null}" :: Maybe Value
     let actual = toValue input
-    expect @=? actual
+    Right expect @=? actual
 
-toValuePaddingTest = TestCase $ do
+toValueGapTest = TestCase $ do
     let input = Arr $ IM.fromList [(0, Val (Number 1)), (5, Val (Number 2))]
-    let Just expect = decode "[1, null, null, null, null, 2]"
+    let expect = Left "found gaps: [1,2,3,4]" :: Result Value
     let actual = toValue input
     expect @=? actual
 
 insertInTest = TestCase $ do
-    let Right p0 = Path.decode "/a$1/b"
+    let Right p0 = Path.decode "/a$2/b"
     let v0 = Number 42
-    let Just e0 = decode "{\"a\": [null, {\"b\": 42}]}" :: Maybe Value
+    let e0 = Left "found gaps: [0,1]" :: Result Value
     let Right p1 = Path.decode "/a$0/c"
-    let Just e1 = decode "{\"a\": [{\"c\": \"z\"}, {\"b\": 42}]}" :: Maybe Value
+    let e1 = Left "found gaps: [1]" :: Result Value
     let v1 = String "z"
-    let Right p2 = Path.decode "/a$2"
-    let Just e2 = decode "{\"a\": [{\"c\": \"z\"}, {\"b\": 42}, 99]}" :: Maybe Value
+    let Right p2 = Path.decode "/a$1"
+    let Just e2 = decode "{\"a\": [{\"c\": \"z\"}, 99, {\"b\": 42}]}" :: Maybe Value
     let v2 = Number 99
     let Right a0 = insertAt p0 v0 Nothing
     let Right a1 = insertAt p1 v1 $ Just a0
     let Right a2 = insertAt p2 v2 $ Just a1
     e0 @=? toValue a0
     e1 @=? toValue a1
-    e2 @=? toValue a2
+    Right e2 @=? toValue a2
 
 tests =
     TestList
         [ "from value" ~: fromValueTest
         , "to value" ~: toValueTest
-        , "to value with padding" ~: toValuePaddingTest
+        , "to value with padding" ~: toValueGapTest
         , "insert in test" ~: insertInTest
         ]
