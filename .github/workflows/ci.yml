@@ -1,0 +1,60 @@
+name: CI
+
+permissions:
+  contents: read
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: ["*"]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Haskell
+        id: setup
+        uses: haskell-actions/setup@v2.10.4
+        with:
+          enable-stack: false
+          ghc-version: 9.6.7
+          cabal-version: latest
+
+      - name: Cache cabal and build artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cabal
+            ~/.ghc
+            dist-newstyle
+          key: ${{ runner.os }}-ghc-${{ steps.setup.outputs.ghc-version }}-cabal-${{ hashFiles('**/*.cabal', '**/cabal.project') }}
+          restore-keys: |
+            ${{ runner.os }}-ghc-${{ steps.setup.outputs.ghc-version }}-cabal-
+
+      - name: Install dependencies
+        run: cabal update && cabal build --only-dependencies
+
+      - name: Set up HLint
+        uses: haskell-actions/hlint-setup@v2
+        with:
+          version: "3.8"
+
+      - name: Run HLint
+        uses: haskell-actions/hlint-run@v2
+        with:
+          path: "src test"
+          fail-on: warning
+
+      - name: Run tests with coverage
+        run: cabal test --enable-coverage --test-show-details=direct
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ runner.os }}-ghc-${{ steps.setup.outputs.ghc-version }}
+          path: dist-newstyle/*/hpc
