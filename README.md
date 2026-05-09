@@ -72,7 +72,7 @@ Structured data:
   "f": {},
   "g": {},
   "~/$": "~ escapes",
-  "\\": "backslash",
+  "\\": "backslash"
 }
 ```
 
@@ -145,9 +145,9 @@ $$
 \tt{flattr}_{\text{YAML}} \circ \tt{yaml2json} \
   &= \tt{yaml2json} \circ \tt{flattr}_{\text{JSON}} \\
 \tt{unflattr}_{\text{JSON}} \circ \tt{json2yaml} \
-  &= \tt{json2yaml} \circ \tt{uflattr}_{\text{YAML}} \\
+  &= \tt{json2yaml} \circ \tt{unflattr}_{\text{YAML}} \\
 \tt{unflattr}_{\text{YAML}} \circ \tt{yaml2json} \
-  &= \tt{yaml2json} \circ \tt{uflattr}_{\text{JSON}} \\
+  &= \tt{yaml2json} \circ \tt{unflattr}_{\text{JSON}} \\
 \end{align*}
 $$
 
